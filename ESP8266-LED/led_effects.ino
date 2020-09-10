@@ -645,6 +645,48 @@ void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, in
 
   delay(EndPause);
 }
+//PinkFire
+void pinkFire(int Cooling, int Sparking, int SpeedDelay){
+  static byte heat[LED_COUNT];
+  int cooldown;
+
+  for(int i = 0; i < LED_COUNT; i++){
+    cooldown = random(0,((Cooling * 10) / LED_COUNT) + 2);
+
+    if(cooldown > heat[i]){
+      heat[i] = 0;
+    } else{
+      heat[i] = heat[i] - cooldown;
+    }
+  }
+  for( int k = LED_COUNT - 1; k >= 2; k--){
+    heat[k] =(heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+  }
+  if( random(255) < Sparking ){
+    int y = random(7);
+    heat[y] = heat[y] + random(160, 255);
+  }
+  for( int j = 0; j < LED_COUNT; j++){
+    setPixelPinkColorBlue(j, heat[j] );
+  }
+  FastLED.show();
+  delay(SpeedDelay);
+}
+
+void setPixelPinkColorBlue(int Pixel, byte temperature){
+  byte t192 = round((temperature / 255.0) * 191);
+  byte heatramp = t192 & 0x03;
+  heatramp <<= 2;
+
+  if( t192 > 0x03){
+    setPixel(Pixel, 255,heatramp, 255);
+  } else if( t192 > 0x40 ){
+    setPixel(Pixel, 255, heatramp, 255);
+  } else{
+    setPixel(Pixel, 0, 0, heatramp);
+  }
+}
+
 
 //голубой линейный огонь
 void blueFire(int Cooling, int Sparking, int SpeedDelay){
@@ -755,4 +797,3 @@ void fadeall(){
     leds[i].nscale8(250); 
   } 
 }
-
